@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\PostLike;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -40,8 +41,13 @@ class PostController extends Controller
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
+        $amilike = PostLike::where('user_id', auth()->id())
+        ->where('post_id', $id)
+        ->exists();
         $this->authorize('view', $post);
-        return response()->json(['data' => $post->append('likes_count')]);
+        $post->append('likes_count');
+        $post->setAttribute('amilike', $amilike);
+        return response()->json(['data' => $post]);
     }
 
     public function update(Request $request, string $id)
