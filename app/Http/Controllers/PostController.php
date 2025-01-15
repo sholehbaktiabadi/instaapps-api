@@ -10,18 +10,14 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {   
     use AuthorizesRequests;
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        $posts = Post::latest()->get();
-        return response()->json(['data' => $posts]); 
+        $posts = Post::with('comments')->latest()->get();
+
+        return response()->json(['data' => $posts->append('likes_count')]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {   
         $data = $request->validate([
@@ -38,22 +34,16 @@ class PostController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $post = Post::find($id);
+        $post = Post::with('comments')->find($id);
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
         $this->authorize('view', $post);
-        return response()->json(['data' => $post]);
+        return response()->json(['data' => $post->append('likes_count')]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $data = $request->validate([
@@ -73,9 +63,6 @@ class PostController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $post = Post::find($id);
