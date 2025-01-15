@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
-{
+{   
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -21,13 +23,15 @@ class PostController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+    {   
         $data = $request->validate([
             'caption' => 'required|min:3|max:255',
-            'imageUrl' => 'required|min:3|max:255',
+            'image_url' => 'required|min:3|max:255',
         ]);
         try {
-            Post::create($datas);
+            $data['user_id'] = auth()->user()->id;
+            $this->authorize('create', $data);
+            Post::create($data);
             return response()->json(['data' => 'ok']);
         } catch (Exception) {
             return response()->json(['data' => 'failed'], 500);
@@ -43,6 +47,7 @@ class PostController extends Controller
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
+        $this->authorize('view', $post);
         return response()->json(['data' => $post]);
     }
 
@@ -53,15 +58,13 @@ class PostController extends Controller
     {
         $data = $request->validate([
             'caption' => 'required|min:3|max:255',
-            'imageUrl' => 'min:3|max:255',
+            'image_url' => 'min:3|max:255',
         ]);
-
         $post = Post::find($id);
-
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
-
+        $this->authorize('update', $post);
         try {
             $post->update($data);
             return response()->json(['data' => 'ok']);
@@ -79,6 +82,7 @@ class PostController extends Controller
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
+        $this->authorize('delete', $post);
         try {
             $post->delete();
             return response()->json(['data' => 'ok']);
