@@ -26,12 +26,10 @@ class PostLikeController extends Controller
 
     public function destroy(string $id)
     {
-        $postLike = PostLike::find($id);
-        if($postLike == null){
-            return response()->json(['data' => 'comment is not exist'], 400);
-        }
-        $this->authorize('delete', $postLike);
+        $postLike = PostLike::where('user_id', auth()->user()->id)
+        ->where('post_id', $id)->first();
         try {
+            $this->authorize('delete', $postLike);
             $postLike->delete();
             return response()->json(['data' => 'ok']);
         } catch (Exception) {
