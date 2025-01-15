@@ -13,9 +13,9 @@ class PostController extends Controller
 
     public function index()
     {
-        $posts = Post::with('comments')->latest()->get();
+        $posts = Post::latest()->get();
 
-        return response()->json(['data' => $posts->append('likes_count')]);
+        return response()->json(['data' => $posts]);
     }
 
     public function store(Request $request)
@@ -36,7 +36,7 @@ class PostController extends Controller
 
     public function show(string $id)
     {
-        $post = Post::with('comments')->find($id);
+        $post = Post::with(['comments','user'])->find($id);
         if($post == null){
             return response()->json(['data' => 'post is not exist'], 400);
         }
