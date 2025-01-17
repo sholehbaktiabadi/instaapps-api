@@ -20,15 +20,16 @@ class PostController extends Controller
     }
 
     public function store(Request $request)
-    {   
+    {
         $data = $request->validate([
             'caption' => 'required|min:3|max:255',
             'image_url' => 'required|min:3|max:255',
         ]);
         try {
             $data['user_id'] = auth()->user()->id;
-            $this->authorize('create', $data);
-            Post::create($data);
+            $post = new Post($data);
+            $this->authorize('create', $post);
+            $post->save();
             return response()->json(['data' => 'ok']);
         } catch (Exception) {
             return response()->json(['data' => 'failed'], 500);
